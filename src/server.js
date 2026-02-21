@@ -1,10 +1,13 @@
 const express = require('express')
 require('dotenv').config()
 
-const pool = require('./database/connection')
+const cors = require('cors')
 
 const app = express()
 
+app.use(cors())
+
+const pool = require('./database/connection')
 const equipmentsRoutes = require('./routes/equipmentsRoutes')
 
 app.use(express.json())
