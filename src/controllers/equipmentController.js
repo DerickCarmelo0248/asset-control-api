@@ -1,84 +1,73 @@
-const pool = require('../database/connection')
+const pool = require('../config/connection')
 
-async function getEquipments(req, res) {
-    try {
-        const result = await pool.query(
-            'SELECT * FROM equipments ORDER BY id ASC'
-        )
+exports.getEquipments = async (req, res) => {
+  try {
 
-        res.json(result.rows)
-    } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: 'Erro ao buscar equipamentos' })
-    }
+    const result = await pool.query(`
+      SELECT * FROM equipments
+      ORDER BY id DESC
+    `)
+
+    res.json(result.rows)
+
+  } catch (error) {
+
+    console.error(error)
+    res.status(500).json({ error: 'Erro ao buscar equipamentos' })
+
+  }
 }
 
-async function createEquipment(req, res) {
-    const { name, patrimonio, serial_number } = req.body
 
-    try {
-        const result = await pool.query(
-            'INSERT INTO equipments (name, patrimonio, serial_number) VALUES ($1, $2, $3) RETURNING *',
-            [name, patrimonio, serial_number]
-        )
+exports.createEquipment = async (req, res) => {
 
-        res.status(201).json(result.rows[0])
-    } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: 'Erro ao criar equipamento' })
-    }
-}  // ← ESSA CHAVE ESTAVA FALTANDO
+  const { name, patrimony, serial, category, status, sector } = req.body
 
-async function updateEquipment(req, res) {
-    const { id } = req.params
-    const { name, patrimonio, serial_number, status } = req.body
+  try {
 
-    try {
-        const result = await pool.query(
-            `UPDATE equipments 
-             SET name = $1,
-                 patrimonio = $2,
-                 serial_number = $3,
-                 status = $4
-             WHERE id = $5
-             RETURNING *`,
-            [name, patrimonio, serial_number, status, id]
-        )
+    const result = await pool.query(
+      `
+      INSERT INTO equipments
+      (name, patrimony, serial, category, status, sector)
+      VALUES ($1,$2,$3,$4,$5,$6)
+      RETURNING *
+      `,
+      [name, patrimony, serial, category, status, sector]
+    )
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Equipamento não encontrado' })
-        }
+    res.status(201).json(result.rows[0])
 
-        res.json(result.rows[0])
-    } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: 'Erro ao atualizar equipamento' })
-    }
+  } catch (error) {
+
+    console.error(error)
+    res.status(500).json({ error: 'Erro ao cadastrar equipamento' })
+
+  }
+
 }
 
-async function deleteEquipment(req, res) {
-    const { id } = req.params
 
-    try {
-        const result = await pool.query(
-            'DELETE FROM equipments WHERE id = $1 RETURNING *',
-            [id]
-        )
+exports.deleteEquipment = async (req, res) => {
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Equipamento não encontrado' })
-        }
+  const { id } = req.params
 
-        res.json({ message: 'Equipamento removido com sucesso' })
-    } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: 'Erro ao remover equipamento' })
-    }
-}
+  try {
 
-module.exports = {
-    getEquipments,
-    createEquipment,
-    updateEquipment,
-    deleteEquipment
+    await pool.query(
+      `
+      DELETE FROM equipments
+      WHERE id = $1
+      `,
+      [id]
+    )
+
+    res.json({ message: 'Equipamento excluído com sucesso' })
+
+  } catch (error) {
+
+    console.error(error)
+    res.status(500).json({ error: 'Erro ao excluir equipamento' })
+
+  }
+
 }

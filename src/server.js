@@ -6,16 +6,15 @@ const cors = require('cors')
 const app = express()
 
 app.use(cors())
-
-const pool = require('./database/connection')
-const equipmentsRoutes = require('./routes/equipmentsRoutes')
-
 app.use(express.json())
+
+const equipmentsRoutes = require('./routes/equipmentsRoutes')
+const pool = require('./config/connection')
 
 app.use('/equipments', equipmentsRoutes)
 
 app.get('/', (req, res) => {
-  res.json({ message: 'API rodando' })
+  res.json({ message: 'API Asset Control rodando' })
 })
 
 app.get('/test-db', async (req, res) => {
@@ -24,10 +23,12 @@ app.get('/test-db', async (req, res) => {
     res.json(result.rows)
   } catch (error) {
     console.error(error)
-    res.status(500).json({ error: 'Erro na conexão' })
+    res.status(500).json({ error: 'Erro na conexão com o banco' })
   }
 })
 
-app.listen(process.env.PORT, () => {
-  console.log(`Servidor rodando na porta ${process.env.PORT}`)
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`)
 })
